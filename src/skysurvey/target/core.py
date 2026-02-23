@@ -8,7 +8,7 @@ import numpy as np
 import pandas
 
 from copy import deepcopy
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from astropy import cosmology, time
 from astropy.utils.decorators import classproperty
 
@@ -1199,18 +1199,18 @@ class Target( object ):
         # skyarea affect get_rate
         if nyears is not None:
             from .rates import get_ntargets
-            from ..tools.projection import radecmodel_to_skysurface
-            if "radec" in drawn_model.model.keys():
-                # radec model 
-                radec_model = deepcopy(drawn_model.model["radec"])
-                # as updated by requested kwargs
-                radec_model["kwargs"] |= kwargs.get("radec", {})
-                f_area = radecmodel_to_skysurface( radec_model )
+            # from ..tools.projection import radecmodel_to_skysurface
+            # if "radec" in drawn_model.model.keys():
+            #     # radec model 
+            #     radec_model = deepcopy(drawn_model.model["radec"])
+            #     # as updated by requested kwargs
+            #     radec_model["kwargs"] |= kwargs.get("radec", {})
+            #     f_area = radecmodel_to_skysurface( radec_model )
+            # else:
+            if skyarea is None or skyarea=='full':
+                f_area = 1.
             else:
-                if skyarea is not None:
-                    warnings.warn("skyarea given, but no radec not in model | *nyears* will not account for skyarea.")
-                    
-                f_area = 1
+                f_area = skyarea/(4*np.pi)
             
             # redefine timing given nyears
             kwargs.setdefault("t0", {}).update({"low": tstart, "high": tstart + 365.25*nyears})
