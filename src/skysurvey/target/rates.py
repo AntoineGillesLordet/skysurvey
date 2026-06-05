@@ -91,7 +91,7 @@ def get_rate(z, rate, **kwargs):
     if callable(rate): # function
         n_per_gpc3 = rate(z, **kwargs)
     else: # volumetric
-        n_per_gpc3 = rate
+        n_per_gpc3 = np.full_like(z, rate)
         
     return n_per_gpc3
     
