@@ -1239,7 +1239,7 @@ class Target( object ):
         # shall data be attached to the object?
         if inplace:
             # lower precision
-            data = data.astype( {k: str(v).replace("64","32") for k, v in data.dtypes.to_dict().items()})
+            # data = data.astype( {k: str(v).replace("64","32") for k, v in data.dtypes.to_dict().items()})
             self.set_data(data)
             # since this is inplace, let's update stored model kwargs
             self.update_model_parameter(**kwargs)
