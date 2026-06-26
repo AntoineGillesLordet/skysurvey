@@ -1102,7 +1102,8 @@ class Target( object ):
             from modeldag import ModelDAG
             current_model_dict = self.model.model
             drawn_model = ModelDAG( current_model_dict | model, obj=self)            
-            
+        
+        updated_kwargs = dict()
         # => tstart, tstop format
         if type(tstart) is str:
             tstart = time.Time(tstart).mjd
@@ -1138,7 +1139,7 @@ class Target( object ):
         key_redshift = drawn_model.get_func_with_args("zmax")
         for zkey in key_redshift:
             if zmax is not None:
-                kwargs.setdefault(zkey, {}).update({"zmax": zmax})
+                updated_kwargs.setdefault(zkey, {}).update({"zmax": zmax})
             
             elif nyears is not None:
                 zmax = self.get_model_parameter(zkey, "zmax", None, model=drawn_model)
@@ -1149,7 +1150,7 @@ class Target( object ):
         for zkey in key_redshift:
             # note: Why condition "on redshift" ?
             if zmin is not None and "redshift" in self.model.model:
-                kwargs.setdefault(zkey, {}).update({"zmin": zmin})
+                updated_kwargs.setdefault(zkey, {}).update({"zmin": zmin})
             
             elif nyears is not None:
                 zmin = self.get_model_parameter(zkey, "zmin", None, model=drawn_model)
@@ -1158,7 +1159,7 @@ class Target( object ):
             if type( tstop ) is str:
                 tstop = time.Time(tstop).mjd
 
-            kwargs.setdefault("t0", {}).update({"high": tstop})
+            updated_kwargs.setdefault("t0", {}).update({"high": tstop})
 
         #
         # time range
@@ -1167,9 +1168,9 @@ class Target( object ):
             if type( tstart ) is str:
                 tstart = time.Time(tstart).mjd
                 
-            kwargs.setdefault("t0",{}).update({"low": tstart})
+            updated_kwargs.setdefault("t0",{}).update({"low": tstart})
             if tstop is None and nyears is None: # do 1 year by default
-                kwargs.setdefault("t0",{}).update({"high": tstart+365.25})
+                updated_kwargs.setdefault("t0",{}).update({"high": tstart+365.25})
                 
         # tstart is None, then what ?
         elif tstop is not None and nyears is not None:
@@ -1190,7 +1191,7 @@ class Target( object ):
                 warnings.warn("skyarea given but no model have skyarea as parameters. This is ignored.")
             
             for k in param_affected:
-                kwargs.setdefault(k, {}).update({"skyarea": skyarea})
+                updated_kwargs.setdefault(k, {}).update({"skyarea": skyarea})
 
         #
         # Size
@@ -1212,7 +1213,7 @@ class Target( object ):
                 f_area = skyarea/(4*np.pi)
             
             # redefine timing given nyears
-            kwargs.setdefault("t0", {}).update({"low": tstart, "high": tstart + 365.25*nyears})
+            updated_kwargs.setdefault("t0", {}).update({"low": tstart, "high": tstart + 365.25*nyears})
 
             if zmin is None:
                 zmin = 0
@@ -1223,6 +1224,7 @@ class Target( object ):
             size = int(ntarget_per_year * nyears * f_area)
             
         # actually draw the data
+        kwargs.update(**updated_kwargs)
         data = drawn_model.draw(size=size, **kwargs)
         
         # patch the missing `amplitude` back to .data
@@ -1241,7 +1243,8 @@ class Target( object ):
             # data = data.astype( {k: str(v).replace("64","32") for k, v in data.dtypes.to_dict().items()})
             self.set_data(data)
             # since this is inplace, let's update stored model kwargs
-            self.update_model_parameter(**kwargs)
+            
+            self.update_model_parameter(**updated_kwargs)
             
         return data
 
@@ -1326,7 +1329,12 @@ class Target( object ):
         """The effect parameters of the template."""
         return self.template.effect_parameters  
 
-
+    def uniform(self, low=0.0, high=1.0, size=None, rng=None):
+        return np.random.default_rng(rng).uniform(low, high, size)
+    
+    def normal(self, loc=0.0, scale=1.0, size=None, rng=None):
+        return np.random.default_rng(rng).normal(loc, scale, size)
+    
     
 class Transient( Target ):
     """
@@ -1361,7 +1369,7 @@ class Transient( Target ):
         else:
             self._rate = float(float_or_func)
 
-    def draw_redshift(self, zmax, zmin=0, zstep=1e-4, size=None, rate=None, **kwargs):
+    def draw_redshift(self, zmax, zmin=0, zstep=1e-4, size=None, rate=None, rng=None, **kwargs):
         """Draw redshift based on the rate (see `get_rate()`).
 
         Parameters
@@ -1396,7 +1404,7 @@ class Transient( Target ):
         if rate is None:
             rate = self.rate
             
-        return draw_redshift(size=size, rate=rate, zmax=zmax, zmin=zmin, zstep=zstep, cosmology=self.cosmology, **kwargs)
+        return draw_redshift(size=size, rate=rate, zmax=zmax, zmin=zmin, zstep=zstep, cosmology=self.cosmology, rng=rng, **kwargs)
     
     # ------- #
     #  GETTER #
