@@ -403,7 +403,7 @@ class SNeIa( Transient ):
 
     _KIND = "SNIa"
     _TEMPLATE = "salt2"
-    _RATE = 2.35 * 10**4 # Perley 2020
+    _RATE = 2.35 * 10**4 / 0.7**3 # h^-3/Gpc^3/yr Perley 2020
     _AMPLITUDE_NAME = "x0"
     
     # {'name': {func: ,'kwargs': {}, 'as': str_or_list }}

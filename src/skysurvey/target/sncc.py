@@ -8,7 +8,7 @@ import numpy as np
 from .timeserie import MultiTemplateTSTransient
 from ..source import get_sncosmo_sourcenames
 
-CC_RATE = 1.0e5 # Perley+2020
+CC_RATE = 1.0e5 / 0.7**3 # Perley+2020
     
 # https://sncosmo.readthedocs.io/en/stable/source-list.html
 
