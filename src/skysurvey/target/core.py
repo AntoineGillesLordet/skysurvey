@@ -7,7 +7,6 @@ import warnings
 import numpy as np
 import pandas
 
-from copy import deepcopy
 from tqdm.auto import tqdm
 from astropy import cosmology, time
 from astropy.utils.decorators import classproperty
