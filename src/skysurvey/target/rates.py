@@ -85,7 +85,7 @@ def get_rate(z, rate, **kwargs):
     Returns
     -------
     rate
-        the rate per Gpc, array (if func) or float
+        the rate per Gpc^3 per h^3, array (if func) or float
     """
     # specified rate function or volumetric rate ?
     if callable(rate): # function
@@ -138,7 +138,7 @@ def get_ntargets_per_shell(zmax, rate, zmin=0, zstep=1e-5, cosmology=Planck18, a
 
     # this define the volume of the universe
     volume = cosmology.comoving_volume( bins_of_redshift ).to("Gpc**3").value
-    volume *= cosmology.h**3
+
     # and this the shell of universe. This is used to compute cases of non-constante rates.
     shell = np.diff(volume) # [ndim-1]
 
@@ -149,7 +149,7 @@ def get_ntargets_per_shell(zmax, rate, zmin=0, zstep=1e-5, cosmology=Planck18, a
     # it basically assumes the rate to be constant within one shell.
     n_per_gpc3_of_shell = get_rate(bins_of_redshift_mid, rate, **kwargs) # [ndim-1]
     # the total number of target per shell is the volumetric_rate_per_shell * the shell_volume
-    ntargets_per_shell = n_per_gpc3_of_shell * shell
+    ntargets_per_shell = n_per_gpc3_of_shell * cosmology.h**3 * shell
     
     return bins_of_redshift_mid, ntargets_per_shell.astype(astype)
 
